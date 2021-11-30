@@ -223,15 +223,17 @@ class GetUserMediaImpl {
      *                         constraints for audio media type.
      */
     private void addDefaultAudioConstraints(MediaConstraints audioConstraints) {
+        // Disable the below algorithms per suggestion from
+        // https://stackoverflow.com/questions/62479789/webrtc-android-echo-cancellation#comment110588402_62518867
         audioConstraints.optional.add(
-                new MediaConstraints.KeyValuePair("googNoiseSuppression", "true"));
+                new MediaConstraints.KeyValuePair("googNoiseSuppression", "false"));
         audioConstraints.optional.add(
-                new MediaConstraints.KeyValuePair("googEchoCancellation", "true"));
-        audioConstraints.optional.add(new MediaConstraints.KeyValuePair("echoCancellation", "true"));
+                new MediaConstraints.KeyValuePair("googEchoCancellation", "false"));
+        audioConstraints.optional.add(new MediaConstraints.KeyValuePair("echoCancellation", "false"));
         audioConstraints.optional.add(
-                new MediaConstraints.KeyValuePair("googEchoCancellation2", "true"));
+                new MediaConstraints.KeyValuePair("googEchoCancellation2", "false"));
         audioConstraints.optional.add(
-                new MediaConstraints.KeyValuePair("googDAEchoCancellation", "true"));
+                new MediaConstraints.KeyValuePair("googDAEchoCancellation", "false"));
     }
 
     /**

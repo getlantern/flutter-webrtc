@@ -54,6 +54,7 @@ import org.webrtc.SessionDescription.Type;
 import org.webrtc.VideoTrack;
 import org.webrtc.audio.AudioDeviceModule;
 import org.webrtc.audio.JavaAudioDeviceModule;
+import org.webrtc.voiceengine.WebRtcAudioUtils;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -146,9 +147,16 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
 
     getUserMediaImpl = new GetUserMediaImpl(this, context);
 
+    // per recommendations from
+    // https://stackoverflow.com/questions/62479789/webrtc-android-echo-cancellation#comment110588402_62518867
+    WebRtcAudioUtils.setWebRtcBasedAcousticEchoCanceler(true);
+    WebRtcAudioUtils.setWebRtcBasedAutomaticGainControl(true);
+    WebRtcAudioUtils.setWebRtcBasedNoiseSuppressor(true);
+
     audioDeviceModule = JavaAudioDeviceModule.builder(context)
-            .setUseHardwareAcousticEchoCanceler(true)
-            .setUseHardwareNoiseSuppressor(true)
+            .setUseHardwareAcousticEchoCanceler(false)
+            .setUseHardwareNoiseSuppressor(false)
+            .setUseLowLatency(true)
             .setSamplesReadyCallback(getUserMediaImpl.inputSamplesInterceptor)
             .createAudioDeviceModule();
 
