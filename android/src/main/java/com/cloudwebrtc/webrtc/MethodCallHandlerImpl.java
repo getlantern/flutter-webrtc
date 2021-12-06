@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
+import android.os.Build;
 import android.util.Log;
 import android.util.LongSparseArray;
 
@@ -61,9 +62,11 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
 
 import io.flutter.plugin.common.BinaryMessenger;
@@ -132,6 +135,23 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
     mPeerConnectionObservers.clear();
   }
 
+  private static Set<String> devicesWithBrokenHardwareAEC() {
+    return new HashSet<String>() {{
+      add("Pixel");
+      add("Pixel XL");
+      add("Moto G5");
+      add("Moto G (5S) Plus");
+      add("Moto G4");
+      add("TA-1053");
+      add("Mi A1");
+      add("Mi A2");
+      add("E5823"); // Sony z5 compact
+      add("Redmi Note 5");
+      add("FP2"); // Fairphone FP2
+      add("MI 5");
+    }};
+  }
+
   private void ensureInitialized() {
     if (mFactory != null) {
       return;
@@ -149,12 +169,13 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
 
     // per recommendations from
     // https://stackoverflow.com/questions/62479789/webrtc-android-echo-cancellation#comment110588402_62518867
-    WebRtcAudioUtils.setWebRtcBasedAcousticEchoCanceler(true);
+    final boolean hardwareAECBroken = devicesWithBrokenHardwareAEC().contains(Build.MODEL);
+    WebRtcAudioUtils.setWebRtcBasedAcousticEchoCanceler(hardwareAECBroken);
     WebRtcAudioUtils.setWebRtcBasedAutomaticGainControl(true);
     WebRtcAudioUtils.setWebRtcBasedNoiseSuppressor(true);
 
     audioDeviceModule = JavaAudioDeviceModule.builder(context)
-            .setUseHardwareAcousticEchoCanceler(false)
+            .setUseHardwareAcousticEchoCanceler(!hardwareAECBroken)
             .setUseHardwareNoiseSuppressor(false)
             .setUseLowLatency(true)
             .setSamplesReadyCallback(getUserMediaImpl.inputSamplesInterceptor)
